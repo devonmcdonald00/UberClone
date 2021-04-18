@@ -1,11 +1,37 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {View, Text, StyleSheet, Image} from "react-native";
 import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
-import cars from '../../assets/data/cars'
+import { API, graphqlOperation } from 'aws-amplify'
+import { listCars } from '../../graphql/queries'
 
 const Map = (props) => {
+    
+    const [cars, setCars] = useState([]);
+    useEffect(() => {
+        const fetchCars = async () => {
+            try {
+                const response = await API.graphql(
+                    graphqlOperation(
+                        listCars
+                    )
+                )
+                console.log(response.data.listCars.items)
+                setCars(response.data.listCars.items);
+                console.log(cars)
+            }
+            catch (e) {
+                console.error(e)
+            }
+        }
+        fetchCars()
+        
+    }, [])
+
     const getImageName = (type) => {
+        console.log(cars)
         if(type === 'UberX'){
+            console.log("here")
+
             return require('../../assets/images/top-UberX.png');
         }
         if(type === 'UberXL'){
@@ -35,7 +61,6 @@ const Map = (props) => {
                 {cars.map((car) => {
                     return(
                         <Marker
-                            key={car.id}
                             coordinate={{latitude: car.latitude, longitude: car.longitude}}
                         >
                             <Image 
